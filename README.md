@@ -4,18 +4,17 @@ Klein is an ubuntu-backed, minimalist baseimage for [Docker](https://www.docker.
 It uses [runit](http://smarden.org/runit/) to handle service management, and an extremely minimal init program written in under a hundred lines of bash.
 
 ## Why should I use Klein?
-Docker's attitude towards containers is to "do one thing and do it well."  I very much agree with this philosophy, however, some things can't be done with a single process in the traditional docker-esque way.
+Docker's attitude towards containers is to "do one thing and do it well."  This philosophy is excellent for making extensible services,  however, some things can't be done with a single process in the traditional docker-esque way.
 
-For example, if you are connecting a [Gogs](https://github.com/gogits/gogs) image behind an [Nginx](https://github.com/nginx/nginx) reverse-proxy to add https security, and start an SSH server for SSH integration, it doesn't make sense for the three services to be launched as separate containers.  They are intrinsically linked into a single logical unit.
+For example, if you are connecting a [Gogs](https://github.com/gogits/gogs) image behind an [Nginx](https://github.com/nginx/nginx) reverse-proxy to handle https, and start an SSH server for SSH git integration, it doesn't make sense for the three services to be launched as separate containers.  They are intrinsically linked into a single logical unit.
 
-It is a mistake, however, to use klein to launch completely different services. An IRC server and a website should be on two different Docker images, even though they may share a few common dependencies.  Doing so simply adds brittleness to your deployment, and is not the recommended use of this image.
+That being said, it is a mistake to use Klein to launch completely different services. An IRC server and a website should be on two different Docker images, even though they may share a few common dependencies.  Doing so simply adds brittleness to your deployment, and is not the recommended use of this image.
 
 ## How should I use Klein?
 Klein has two simple mechanisms that sub-dockerfiles can use, initialization scripts, and runit services.
 
 ### Initialization scripts
 Any script in the /etc/init/ directory which is executable for root will automatically be started when the container itself is started with "docker start."
-
 
 ### Services
 Services in the /etc/service/ directory are defined by [runit](http://smarden.org/runit/faq.html#create)
@@ -46,7 +45,7 @@ do
 done
 EOF
 ```
-You'll notice that the services are started as infinite loops.  This is a small fault of runit.  Daemons should not be allowed to fork, as the health of a service is determined by whether or not it is currently running.
+Notice that the services are started as infinite loops.  Runit services should not be allowed to fork, as the health of a service is determined by whether or not it is currently running.
 
 ### Caveats
 This image doesn't actually use runit for anything except for service management (specifically runsvdir).
