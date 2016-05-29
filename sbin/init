@@ -47,6 +47,6 @@ graceful_stop_services() {
 }
 
 #docker stop sends SIGTERM, we need to send SIGHUP to runit for it to gracefully kill connections
-trap "graceful_stop_services" SIGTERM INT SIGHUP
+trap "graceful_stop_services" SIGTERM SIGINT SIGHUP
 #bash will handle the orphan killing logic, we don't need to do that ourselves.
 wait $runit_service_pid
