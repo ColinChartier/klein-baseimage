@@ -1,5 +1,9 @@
 #! /bin/bash
 
+#don't allow unset variables, and fail if a single subcommand in this init script fails.
+#see man set
+set -eu
+
 if [ "$$" -ne 1 ]; then
     echo "This script must be run to initialize the docker container." 1>&2
     echo "I.E docker run -d klein/baseimage /sbin/init"
