@@ -11,7 +11,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get --purge remove -yq --allow-remove-ess
 RUN DEBIAN_FRONTEND=noninteractive apt-get --purge remove -yq tzdata
 
 #install runit
-RUN apt-get update && \
+RUN apt-get update -q && \
     DEBIAN_FRONTEND=noninteractive apt-get install -yq runit && \
     rm -rf /var/lib/apt/lists/*
 
