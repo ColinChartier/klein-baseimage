@@ -1,0 +1,41 @@
+#! /bin/bash
+
+if [ "$$" -ne 1 ]; then
+    echo "This script must be run to initialize the docker container." 1>&2
+    echo "I.E docker run -d klein/baseimage /sbin/init"
+    exit 112
+fi
+
+echo "Executing initial scripts..."
+
+for SCRIPT in /etc/init/*; do
+    if [ -f $SCRIPT -a -x $SCRIPT ]; then
+        echo "Executing $SCRIPT..."
+        $SCRIPT
+    fi
+done
+
+echo "Done executing initial scripts."
+echo "Starting runit daemon manager..."
+/usr/bin/runsvdir -P /etc/service&
+export runit_service_pid="$!"
+
+echo "Runit daemon manager pid: $runit_service_pid"
+
+graceful_stop_services() {
+    #sending a HUP to runsvdir causes it to gracefully stop all services
+    kill -s HUP $runit_service_pid
+    #wait 10 seconds for services to stop, otherwise just kill everything ungracefully.
+    (sleep 2; echo "Services will be ungracefully stopped in 8s...")&
+    (sleep 10; echo "Ungraceful shutdown..." 1>&2; exit 113)&
+
+    echo "Services stopping..."
+    wait $runit_service_pid
+    echo "Gracefully stopped!"
+    exit 0
+}
+
+#docker stop sends SIGTERM, we need to send SIGKILL to runit for it to gracefully kill connections
+trap "graceful_stop_services" SIGTERM INT SIGHUP
+#bash automagically kills zombie children, we don't need to do that logic ourselves
+wait $runit_service_pid
