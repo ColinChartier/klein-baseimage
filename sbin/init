@@ -1,8 +1,7 @@
 #! /bin/bash
 
-#don't allow unset variables, and fail if a single subcommand in this init script fails.
-#see man set
-set -eu
+#don't allow unset variables
+set -u
 
 if [ "$$" -ne 1 ]; then
     echo "This script must be run to initialize the docker container." 1>&2
@@ -16,9 +15,17 @@ for SCRIPT in /etc/init/*; do
     if [ -f $SCRIPT -a -x $SCRIPT ]; then
         echo "Executing $SCRIPT..."
         $SCRIPT
+        if [ "$?" -ne 0 ]; then
+            echo "Failed to run script $SCRIPT. Exit code $?" 1>&2
+            exit 113
+        fi
     fi
 done
 
+#fail if a single subcommand in the rest of the script fails.
+#we don't set this initially, because initscripts should have a useful message printed if they fail.
+#see man set
+set -e
 echo "Done executing initial scripts."
 echo "Starting runit daemon manager..."
 /usr/bin/runsvdir -P /etc/service&
@@ -31,7 +38,7 @@ graceful_stop_services() {
     kill -s HUP $runit_service_pid
     #wait 10 seconds for services to stop, otherwise just kill everything ungracefully.
     (sleep 2; echo "Services will be ungracefully stopped in 8s...")&
-    (sleep 10; echo "Ungraceful shutdown..." 1>&2; exit 113)&
+    (sleep 10; echo "Ungraceful shutdown..." 1>&2; exit 114)&
 
     echo "Services stopping..."
     wait $runit_service_pid
