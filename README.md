@@ -48,6 +48,16 @@ EOF
 ```
 You'll notice that the services are started as infinite loops.  This is a small fault of runit.  Daemons should not be allowed to fork, as the health of a service is determined by whether or not it is currently running.
 
+### Caveats
+This image doesn't actually use runit for anything except for service management (specifically runsvdir).
+
+The information on the runit site about things other than services doesn't pertain to this image.  Only the documentation about services does.
+
+This image also doesn't have mechanisms for running services whose files are written for init systems than runit.
+
+Those written for systemd, for example, will need to be ported by hand.
+
+
 ## Credits
  - [Docker](https://www.docker.com/)
  - [Phusion Baseimage](https://github.com/phusion/baseimage-docker)
