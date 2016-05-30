@@ -41,7 +41,7 @@ graceful_stop_services() {
     (sleep 10; echo "Ungraceful shutdown..." 1>&2; exit 114)&
 
     echo "Services stopping..."
-    wait $runit_service_pid
+    wait `jobs -p`
     echo "Gracefully stopped!"
     exit 0
 }
