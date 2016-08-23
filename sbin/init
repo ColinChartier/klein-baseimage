@@ -38,10 +38,22 @@ graceful_stop_services() {
     kill -s HUP $runit_service_pid
     #wait 10 seconds for services to stop, otherwise just kill everything ungracefully.
     (sleep 2; echo "Services will be ungracefully stopped in 8s...")&
-    (sleep 10; echo "Ungraceful shutdown..." 1>&2; exit 114)&
+    TASK_WARN="$!"
+    (sleep 10; echo "Ungraceful shutdown..." 1>&2; kill -9 $runit_service_pid; exit 114)&
+    TASK_KILL="$!"
 
     echo "Services stopping..."
-    wait `jobs -p`
+    JOBS=()
+    for i in $(jobs -p); do
+        if [ $i -ne $TASK_WARN -a $i -ne $TASK_KILL ]; then
+            JOBS+=($i)
+        fi
+    done
+    if [ ! -z "${JOBS[@]:-}" ]; then
+        echo "waiting for jobs:"
+        echo "${JOBS[@]}"
+        wait ${JOBS[@]}
+    fi
     echo "Gracefully stopped!"
     exit 0
 }

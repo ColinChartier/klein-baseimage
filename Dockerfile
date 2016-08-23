@@ -22,5 +22,6 @@ RUN rm -rf /etc/init.d /etc/init /etc/service && \
 
 #add our bootstrapper
 ADD sbin/init /sbin/init
+RUN chmod 755 /sbin/init
 
 CMD ["/sbin/init"]
